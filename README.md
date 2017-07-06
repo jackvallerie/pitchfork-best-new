@@ -1,4 +1,4 @@
-# **Pitchfork Scrape**
+# **Pitchfork Best New**
 
 Jack Vallerie
 

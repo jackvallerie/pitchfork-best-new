@@ -2,3 +2,5 @@ NOTES
 secret.py
 venv
 pyvenv.cfg
+.env
+.cache-jackvallerie

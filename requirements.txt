@@ -4,6 +4,7 @@ idna==2.8
 lxml==4.3.3
 PyJWT==1.7.1
 PySocks==1.6.8
+python-dotenv==0.10.1
 pytz==2019.1
 regex==2019.4.14
 requests==2.21.0

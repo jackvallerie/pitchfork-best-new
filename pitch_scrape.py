@@ -10,13 +10,14 @@ number with the track/album info and links to the track/album on Spotify
 
 import os, sys, regex, spotipy, requests
 from lxml import html
+from dotenv import load_dotenv
 import spotipy.util as util
 from twilio.rest import Client
 
 
 #################
 ### CONSTANTS
-
+load_dotenv()
 spotify_client_id = os.environ['SPOTIFY_CLIENT_ID']
 spotify_client_secret = os.environ['SPOTIFY_CLIENT_SECRET']
 twilio_account_sid = os.environ['TWILIO_ACCOUNT_SID']

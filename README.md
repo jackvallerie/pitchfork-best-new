@@ -23,7 +23,11 @@ Start a SimpleHTTPServer for the Spotify Redirect URI.  The script currently
 redirects to http://localhost:8000/  ([pitch_scrape.py, line 44](https://github.com/jackvallerie/pitchfork-best-new/blob/master/pitch_scrape.py#L44)), which is the sever that is automatically set up when you run
 
 ```
+# python2
 python -m SimpleHTTPServer
+
+# python3
+python3 -m http.server
 ```
 
 ## Usage

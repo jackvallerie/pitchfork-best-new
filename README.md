@@ -13,6 +13,12 @@ It then uses the Spotify Web API (via spotipy) to search for the track or album,
 uses the Twilio API to send a text message to a specified phone number with the
 best new music info and the Spotify URLs to the track/album if it could find it.
 
+## Setup
+Install requirements:
+```
+pip install -r requirements.txt
+```
+
 
 The script usage is
 

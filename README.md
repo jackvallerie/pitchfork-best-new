@@ -19,6 +19,13 @@ Install requirements:
 pip install -r requirements.txt
 ```
 
+Start a SimpleHTTPServer for the Spotify Redirect URI.  The script currently 
+redirects to http://localhost:8000/  ([pitch_scrape.py, line 44](https://github.com/jackvallerie/pitchfork-best-new/blob/master/pitch_scrape.py#L44)), which is the sever that is automatically set up when you run
+
+```
+python -m SimpleHTTPServer
+```
+
 ## Usage
 
 The script usage is
@@ -31,10 +38,3 @@ characters or spaces. After running this a webpage will automatically open up
 and you will be prompted to paste the URL of that page into the terminal.
 
 
-This script does, however, require that a server be set up beforehand for the
-Spotify Redirect URI.  I currently have the app redirecting to http://localhost:8000/
-as seen on line 44, which is the sever that is automatically set up when you run
-
-```
-python -m SimpleHTTPServer
-```

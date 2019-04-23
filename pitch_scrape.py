@@ -33,7 +33,7 @@ def main():
         username = sys.argv[1]
         phoneNumber = sys.argv[2]
     else:
-        print "Usage: %s username phoneNumber" % (sys.argv[0],)
+        print("Usage: {} username phoneNumber".format(sys.argv[0]))
         sys.exit()
 
 
@@ -57,7 +57,7 @@ def main():
     [albumURL, trackURL] = getURLs(albumArtist, albumTitle, trackArtist, trackTitle, sp)
     message = buildMessage(albumTitle, albumArtist, albumURL, trackTitle, trackArtist, trackURL)
     sendSMS(message, phoneNumber)
-    print message
+    print(message)
 
 
 

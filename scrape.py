@@ -38,20 +38,34 @@ def main():
                                        redirect_uri='http://localhost:8000/')
     sp    = spotipy.Spotify(auth=token)
 
+    # set these to nothing on first run
+    latest_album_artist = latest_album_title = latest_track_artist = latest_track_title = ''
 
     # get info from HTML and clean it
-    [album_artist, album_title,
-     track_artist, track_title] = scrapeInfo()
-    [album_title, track_title] = cleanStrings(album_title[0], track_title[0])
-    album_artist = album_artist[0]
-    track_artist = track_artist[0]
+    best_new_info = scrape_info()
+
+    if best_new_info['album_artist'] + best_new_info['album_title'] == latest_album_artist + latest_album_title:
+        new_album = False
+    else:
+        new_album = True
+        best_new_info['album_url'] = get_spotify_url(best_new_info['album_artist'], best_new_info['album_title'], 'album', sp)
+        latest_album_artist = best_new_info['album_artist']
+        latest_album_title = best_new_info['album_title']
+    if best_new_info['track_artist'] + best_new_info['track_title'] == latest_track_artist + latest_track_title:
+        new_track = False
+    else:
+        new_track = True
+        best_new_info['track_url'] = get_spotify_url(best_new_info['track_artist'], best_new_info['track_title'], 'track', sp)
+        latest_track_artist = best_new_info['track_artist']
+        latest_track_title = best_new_info['track_title']
+    
 
 
     # Find Spotify links, build SMS, send message
-    [album_url, track_url] = getURLs(album_artist, album_title, track_artist, track_title, sp)
-    message = buildMessage(album_title, album_artist, album_url, track_title, track_artist, track_url)
-    sendSMS(message)
-    print(message)
+    if new_album or new_track:
+        message = build_message(best_new_info, new_album, new_track)
+        send_sms(message)
+        print(message)
 
 
 
@@ -62,7 +76,7 @@ def main():
 ########################################
 
 # scrapes necessary info from Pitchfork 'Best New' webpage
-def scrapeInfo():
+def scrape_info():
     page = requests.get('http://pitchfork.com/best/')
     tree = html.fromstring(page.content)
     
@@ -76,11 +90,20 @@ def scrapeInfo():
     track_title  = tree.xpath('//*[@id="best-new-overview"]/div/div/div[2]' + \
                                     '/div/a/div[2]/h3[2]/text()')
 
-    return [album_artist, album_title, track_artist, track_title]
+    [album_title, track_title] = clean_strings(album_title[0], track_title[0])
+
+    best_new_info = {
+        'album_artist': album_artist[0],
+        'album_title': album_title,
+        'track_artist': track_artist[0],
+        'track_title': track_title
+    }
+
+    return best_new_info
 
 
 # strip strings of newline chars and remove unicode on track title
-def cleanStrings(album_title, track_title):
+def clean_strings(album_title, track_title):
     album_title = album_title.rstrip()
     track_title = track_title.rstrip()
     track_title = regex.sub('\xe2\x80\x9c','', track_title)
@@ -89,38 +112,47 @@ def cleanStrings(album_title, track_title):
 
 
 # get Spotify URLs for best new track and best new album 
-def getURLs(album_artist, album_title, track_artist, track_title, sp):
+def get_spotify_url(artist, title, search_type, sp):
     # run searches
-    albumSearch = sp.search(album_artist + ' ' + album_title,
-                            limit=1, offset=0, type='album', market=None)
-    trackSearch = sp.search(track_artist + ' ' + track_title,
-                            limit=1, offset=0, type='track', market=None)
+    search = sp.search(' '.join([artist, title]),
+                            limit=1, offset=0, type=search_type, market=None)
 
     # check if search returned any results
-    if not albumSearch['albums']['items']:
-        album_url = []
-    else:
-        album_url = albumSearch['albums']['items'][0]['external_urls']['spotify']
-    if not trackSearch['tracks']['items']:
-        track_url = []
-    else:
-        track_url = trackSearch['tracks']['items'][0]['external_urls']['spotify']
+    if search_type == 'album':
+        if not search['albums']['items']:
+            url = None
+        else:
+            url = search['albums']['items'][0]['external_urls']['spotify']
+    elif search_type == 'track':
+        if not search['tracks']['items']:
+            url = None
+        else:
+            url = search['tracks']['items'][0]['external_urls']['spotify']
 
-    return [album_url, track_url]
+    return url
 
 
 # combines results of web scrape and search for URLs into one string
-def buildMessage(album_title, album_artist, album_url, track_title, track_artist, track_url):
-    message = 'Best New Album: ' + album_title + ' by ' + album_artist + '\n' + \
-              'Spotify URL: ' + (album_url if album_url else 'No results') + '\n\n' +\
-              'Best New Track: ' + track_title + ' by ' + track_artist + '\n' + \
-              'Spotify URL: ' + (track_url if track_url else 'No results')
+def build_message(best_new_info, new_album, new_track):
+    message = ''
+    if new_album:
+        message += "Best New Album: {} by {} \nSpotify URL: {}".format(
+            best_new_info['album_title'], best_new_info['album_artist'],
+            best_new_info.get('album_url', 'No results')
+        )
+        if new_track:
+            message += '\n\n'
+    if new_track:
+        message += "Best New Track: {} by {} \nSpotify URL: {}".format(
+            best_new_info['track_title'], best_new_info['track_artist'],
+            best_new_info.get('track_url', 'No results')
+        )
 
     return message
 
 
 # send SMS with 'best new' info
-def sendSMS(message):
+def send_sms(message):
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
     client.messages.create(
